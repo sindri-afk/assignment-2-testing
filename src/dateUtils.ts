@@ -1,36 +1,61 @@
-import moment from "moment";
+import { 
+  getYear, 
+  add as addDateFns, 
+  isAfter, 
+  isWithinInterval, 
+  isBefore, 
+  isSameDay as isSameDayDateFns,
+  parseISO 
+} from "date-fns";
 import { DATE_UNIT_TYPES } from "./constants";
 
 export function getCurrentYear(): number {
-  return moment().year();
+  return getYear(new Date());
 }
 
-export function add(date: Date, amount: number, type: string = DATE_UNIT_TYPES.DAYS): Date {
+export function add(date: any, amount: any, type: string = DATE_UNIT_TYPES.DAYS): Date {
   if (!(date instanceof Date) || isNaN(date.getTime())) {
     throw new Error('Invalid date provided');
   }
   if (typeof amount !== 'number' || isNaN(amount)) {
     throw new Error('Invalid amount provided');
   }
-  return moment(date).add(amount, type).toDate();
+  
+  const duration: Record<string, number> = {};
+  duration[type] = amount;
+  
+  return addDateFns(date, duration);
 }
 
 export function isWithinRange(date: Date | string, from: Date | string, to: Date | string): boolean {
-  if (moment(from).isAfter(to)) {
+  const fromDate = typeof from === 'string' ? parseISO(from) : from;
+  const toDate = typeof to === 'string' ? parseISO(to) : to;
+  
+  if (isAfter(fromDate, toDate)) {
     throw new Error('Invalid range: from date must be before to date');
   }
-  return moment(date).isBetween(from, to);
+  
+  const dateObj = typeof date === 'string' ? parseISO(date) : date;
+  
+  if (isAfter(dateObj, fromDate) && isBefore(dateObj, toDate)) {
+    return true;
+  }
+  
+  return false;
 }
 
 export function isDateBefore(date: Date | string, compareDate: Date | string): boolean {
-  return moment(date).isBefore(compareDate);
+  const dateObj = typeof date === 'string' ? parseISO(date) : date;
+  const compareDateObj = typeof compareDate === 'string' ? parseISO(compareDate) : compareDate;
+  return isBefore(dateObj, compareDateObj);
 }
 
 export function isSameDay(date: Date | string, compareDate: Date | string): boolean {
-  return moment(date).isSame(compareDate, 'day');
+  const dateObj = typeof date === 'string' ? parseISO(date) : date;
+  const compareDateObj = typeof compareDate === 'string' ? parseISO(compareDate) : compareDate;
+  return isSameDayDateFns(dateObj, compareDateObj);
 }
 
-// Simulates fetching holidays from an API
 export async function getHolidays(year: number): Promise<Date[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -47,4 +72,5 @@ export async function isHoliday(date: Date): Promise<boolean> {
   const holidays = await getHolidays(date.getFullYear());
   return holidays.some(holiday => isSameDay(date, holiday));
 }
+
 
