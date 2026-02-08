@@ -1,11 +1,11 @@
 import moment from "moment";
 import { DATE_UNIT_TYPES } from "./constants";
 
-export function getCurrentYear() {
+export function getCurrentYear(): number {
   return moment().year();
 }
 
-export function add(date, amount, type = DATE_UNIT_TYPES.DAYS) {
+export function add(date: Date, amount: number, type: string = DATE_UNIT_TYPES.DAYS): Date {
   if (!(date instanceof Date) || isNaN(date.getTime())) {
     throw new Error('Invalid date provided');
   }
@@ -15,23 +15,23 @@ export function add(date, amount, type = DATE_UNIT_TYPES.DAYS) {
   return moment(date).add(amount, type).toDate();
 }
 
-export function isWithinRange(date, from, to) {
+export function isWithinRange(date: Date | string, from: Date | string, to: Date | string): boolean {
   if (moment(from).isAfter(to)) {
     throw new Error('Invalid range: from date must be before to date');
   }
   return moment(date).isBetween(from, to);
 }
 
-export function isDateBefore(date, compareDate) {
+export function isDateBefore(date: Date | string, compareDate: Date | string): boolean {
   return moment(date).isBefore(compareDate);
 }
 
-export function isSameDay(date, compareDate) {
+export function isSameDay(date: Date | string, compareDate: Date | string): boolean {
   return moment(date).isSame(compareDate, 'day');
 }
 
 // Simulates fetching holidays from an API
-export async function getHolidays(year) {
+export async function getHolidays(year: number): Promise<Date[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve([
@@ -43,7 +43,8 @@ export async function getHolidays(year) {
   });
 }
 
-export async function isHoliday(date) {
+export async function isHoliday(date: Date): Promise<boolean> {
   const holidays = await getHolidays(date.getFullYear());
   return holidays.some(holiday => isSameDay(date, holiday));
 }
+
